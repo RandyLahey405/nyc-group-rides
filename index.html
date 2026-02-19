@@ -137,9 +137,16 @@
         
         scheduleContainer.innerHTML = ''; 
 
-        daysOfWeek.forEach(day => {
-            const ridesForDay = allRides.filter(r => {
-                const matchesDay = r['Day'] === day;
+        // Define which categories we want to show (Days + a catch-all for "Varies")
+        const sectionHeaders = [...daysOfWeek, "Varies"];
+
+        sectionHeaders.forEach(header => {
+            const ridesForSection = allRides.filter(r => {
+                // If the header is "Varies", catch anything not in the standard Mon-Sun list
+                const matchesDay = (header === "Varies") 
+                    ? (!daysOfWeek.includes(r['Day'])) 
+                    : (r['Day'] === header);
+
                 const matchesCat = (selectedCat === '' || r['Category/Speed'] === selectedCat);
                 const matchesSearch = (
                     r['Ride Name'].toLowerCase().includes(searchTerms) ||
@@ -149,13 +156,13 @@
                 return matchesDay && matchesCat && matchesSearch;
             });
 
-            if (ridesForDay.length === 0) return;
+            if (ridesForSection.length === 0) return;
 
             const section = document.createElement('div');
             section.className = 'day-section';
-            section.id = day;
+            section.id = header;
             
-            let ridesHtml = ridesForDay.map(r => `
+            let ridesHtml = ridesForSection.map(r => `
                 <div class="ride-card">
                     <div class="ride-top">
                         <h3 class="ride-name">${r['Ride Name']}</h3>
@@ -177,8 +184,11 @@
                 </div>
             `).join('');
 
+            // Display "Special / Varying Schedule" instead of just "Varies" as the title
+            const displayTitle = (header === "Varies") ? "Special / Varying Schedule" : header;
+
             section.innerHTML = `
-                <h2 class="day-title">${day}</h2>
+                <h2 class="day-title">${displayTitle}</h2>
                 <div class="ride-list">${ridesHtml}</div>
             `;
             scheduleContainer.appendChild(section);
