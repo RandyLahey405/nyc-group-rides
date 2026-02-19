@@ -112,4 +112,30 @@
                         <span class="ride-time">${r['Start Time']}</span>
                     </div>
                     <div class="ride-meta">
-                        ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>
+                        ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
+                        ${r['Distance'] ? `<span class="tag">${r['Distance']}</span>` : ''}
+                    </div>
+                    <div class="location">
+                        📍 ${r['Start Location Link'] ? `<a href="${r['Start Location Link']}" target="_blank">${r['Start Location']} ↗</a>` : r['Start Location']}
+                    </div>
+                    ${r['Description'] ? `<div class="description">${r['Description']}</div>` : ''}
+                    <div class="links">
+                        ${r['Organizer/Club Link'] ? `<a href="${r['Organizer/Club Link']}" target="_blank">Club Info ↗</a>` : ''}
+                        ${r['Strava Link'] ? `<a href="${r['Strava Link']}" target="_blank">Strava Route ↗</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            section.innerHTML = `
+                <h2 class="day-title">${day}</h2>
+                <div class="ride-list">
+                    ${ridesHtml || '<p style="color:#94a3b8; font-style:italic;">No rides listed for this day.</p>'}
+                </div>
+            `;
+            scheduleContainer.appendChild(section);
+        });
+    }
+    init();
+</script>
+</body>
+</html>
