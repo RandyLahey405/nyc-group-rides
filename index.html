@@ -39,6 +39,12 @@
 
 <div class="container">
     <header><h1>NYC Paceline</h1></header>
+    <p id="last-updated" style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: -10px;"></p>
+
+<script>
+    const d = new Date();
+    document.getElementById('last-updated').innerHTML = "Last updated: " + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+</script>
     <div class="controls">
         <div class="day-nav">
             <a href="#Monday" class="nav-btn">Mon</a>
@@ -137,5 +143,15 @@
     }
     init();
 </script>
+    <div style="text-align: center; margin: 40px 0 60px 0;">
+    <a href="YOUR_GOOGLE_FORM_LINK_HERE" target="_blank" 
+       style="background: var(--primary); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-weight: 700; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+       + Submit a Ride
+    </a>
+</div>
+
+<footer style="text-align: center; color: #64748b; font-size: 0.8rem; margin-bottom: 40px;">
+    <p>© 2026 NYC Paceline. Ride at your own risk.</p>
+</footer>
 </body>
 </html>
