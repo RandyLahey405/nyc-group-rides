@@ -7,15 +7,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #ffffff; --card: #f8fafc; --text: #0f172a; --border: #e2e8f0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); line-height: 1.5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); line-height: 1.5; scroll-behavior: smooth; }
         .container { max-width: 700px; margin: 0 auto; }
         
-        header { text-align: center; padding: 40px 0; border-bottom: 2px solid var(--border); margin-bottom: 40px; }
-        h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; margin: 0; }
-        .subtitle { color: #64748b; font-size: 1.1rem; margin-top: 10px; }
+        header { text-align: center; padding: 30px 0 10px 0; }
+        h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin: 0; }
+        
+        /* Navigation & Filters */
+        .controls { position: sticky; top: 0; background: white; padding: 15px 0; border-bottom: 1px solid var(--border); z-index: 100; margin-bottom: 30px; }
+        .day-nav { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .nav-btn { text-decoration: none; font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; text-transform: uppercase; }
+        .nav-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .filter-bar { display: flex; justify-content: center; gap: 10px; }
+        select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; background: var(--card); font-weight: 600; cursor: pointer; }
 
         /* Day Sections */
-        .day-section { margin-bottom: 60px; }
+        .day-section { margin-bottom: 50px; scroll-margin-top: 100px; }
         .day-title { font-size: 1.8rem; font-weight: 800; border-bottom: 4px solid var(--primary); display: inline-block; margin-bottom: 25px; padding-right: 20px; }
         
         .ride-list { display: grid; gap: 15px; }
@@ -38,7 +46,7 @@
         .links a { font-weight: 700; color: var(--primary); text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; }
         .links a:hover { text-decoration: underline; }
 
-        .no-rides { color: #94a3b8; font-style: italic; margin-top: 10px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -46,8 +54,24 @@
 <div class="container">
     <header>
         <h1>NYC Group Rides</h1>
-        <p class="subtitle">Weekly pacelines and social rolls.</p>
     </header>
+
+    <div class="controls">
+        <div class="day-nav">
+            <a href="#Monday" class="nav-btn">Mon</a>
+            <a href="#Tuesday" class="nav-btn">Tue</a>
+            <a href="#Wednesday" class="nav-btn">Wed</a>
+            <a href="#Thursday" class="nav-btn">Thu</a>
+            <a href="#Friday" class="nav-btn">Fri</a>
+            <a href="#Saturday" class="nav-btn">Sat</a>
+            <a href="#Sunday" class="nav-btn">Sun</a>
+        </div>
+        <div class="filter-bar">
+            <select id="catFilter">
+                <option value="">⚡ All Speeds / Categories</option>
+            </select>
+        </div>
+    </div>
 
     <div id="schedule">
         <p style="text-align: center;">Loading the peloton...</p>
@@ -58,35 +82,57 @@
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eBkGA4ZZs82Yh5e4OtTPLaRUlmAAOSk5YeaCn_iwthbGJvHZ8GGK7Kt6C5LRoRvip-QPv_4B5v3S/pub?gid=0&single=true&output=csv';
     const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+    let allRides = [];
+
     function init() {
         Papa.parse(sheetUrl, {
             download: true,
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                const data = results.data.map(row => {
+                allRides = results.data.map(row => {
                     const newRow = {};
                     for (let key in row) { newRow[key.trim()] = row[key] ? row[key].trim() : ""; }
                     return newRow;
-                });
-                renderSchedule(data);
+                }).filter(r => r['Ride Name']);
+                
+                populateCategoryFilter(allRides);
+                renderSchedule();
             }
         });
     }
 
-    function renderSchedule(rides) {
+    function populateCategoryFilter(rides) {
+        const catSelect = document.getElementById('catFilter');
+        const categories = [...new Set(rides.map(r => r['Category/Speed']))].filter(Boolean).sort();
+        categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            catSelect.appendChild(opt);
+        });
+        catSelect.addEventListener('change', renderSchedule);
+    }
+
+    function renderSchedule() {
         const scheduleContainer = document.getElementById('schedule');
-        scheduleContainer.innerHTML = ''; // Clear loading message
+        const selectedCat = document.getElementById('catFilter').value;
+        scheduleContainer.innerHTML = ''; 
 
         daysOfWeek.forEach(day => {
-            const ridesForDay = rides.filter(r => r['Day'] === day);
-            
-            // Create Section for the Day
+            const ridesForDay = allRides.filter(r => 
+                r['Day'] === day && 
+                (selectedCat === '' || r['Category/Speed'] === selectedCat)
+            );
+
+            // If a category is selected and a day has no matching rides, hide the whole day
+            if (selectedCat !== '' && ridesForDay.length === 0) return;
+
             const section = document.createElement('div');
             section.className = 'day-section';
+            section.id = day;
             
             let ridesHtml = ridesForDay.map(r => {
-                // Improved link checking: removes accidental spaces and checks for http
                 const clubLink = r['Organizer/Club Link'];
                 const stravaLink = r['Strava Link'];
                 const locLink = r['Start Location Link'];
@@ -98,34 +144,4 @@
                             <span class="ride-time">${r['Start Time']}</span>
                         </div>
                         <div class="ride-meta">
-                            ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
-                            ${r['Distance'] ? `<span class="tag">${r['Distance']}</span>` : ''}
-                        </div>
-                        <div class="location">
-                            📍 ${locLink ? `<a href="${locLink}" target="_blank">${r['Start Location']} ↗</a>` : r['Start Location']}
-                        </div>
-                        ${r['Description'] ? `<div class="description">${r['Description']}</div>` : ''}
-                        <div class="links">
-                            ${clubLink.includes('http') ? `<a href="${clubLink}" target="_blank">Club Info ↗</a>` : ''}
-                            ${stravaLink.includes('http') ? `<a href="${stravaLink}" target="_blank">Strava Route ↗</a>` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            section.innerHTML = `
-                <h2 class="day-title">${day}</h2>
-                <div class="ride-list">
-                    ${ridesHtml || '<p class="no-rides">No rides listed for this day yet.</p>'}
-                </div>
-            `;
-            
-            scheduleContainer.appendChild(section);
-        });
-    }
-
-    init();
-</script>
-
-</body>
-</html>
+                            ${r['Category/Speed'] ? `<span class="tag tag-cat">${r
