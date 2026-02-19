@@ -121,6 +121,92 @@
     }
 
     init();
+<script>
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eBkGA4ZZs82Yh5e4OtTPLaRUlmAAOSk5YeaCn_iwthbGJvHZ8GGK7Kt6C5LRoRvip-QPv_4B5v3S/pub?gid=0&single=true&output=csv';
+
+    function init() {
+        Papa.parse(sheetUrl, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const cleanedData = results.data.map(row => {
+                    const newRow = {};
+                    for (let key in row) { newRow[key.trim()] = row[key] ? row[key].trim() : ""; }
+                    return newRow;
+                });
+                const finalData = cleanedData.filter(row => row['Ride Name']);
+                setupFilters(finalData);
+                renderRides(finalData);
+            }
+        });
+    }
+
+    function renderRides(rides) {
+        const list = document.getElementById('ride-list');
+        const dayVal = document.getElementById('dayFilter').value;
+        const catVal = document.getElementById('catFilter').value;
+
+        const filtered = rides.filter(r => {
+            return (dayVal === '' || r['Day'] === dayVal) && 
+                   (catVal === '' || r['Category/Speed'] === catVal);
+        });
+
+        list.innerHTML = filtered.map(r => {
+            // Check if links exist and are not just empty strings
+            const hasClubLink = r['Organizer/Club Link'] && r['Organizer/Club Link'].startsWith('http');
+            const hasStravaLink = r['Strava Link'] && r['Strava Link'].startsWith('http');
+            const hasLocationLink = r['Start Location Link'] && r['Start Location Link'].startsWith('http');
+
+            return `
+            <div class="ride-card">
+                <div class="ride-header">
+                    <h3 class="ride-name">${r['Ride Name']}</h3>
+                    <div class="tags">
+                        ${r['Day'] ? `<span class="tag tag-day">${r['Day']}</span>` : ''}
+                        ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
+                    </div>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item"><strong>Time</strong>${r['Start Time'] || 'N/A'}</div>
+                    <div class="detail-item"><strong>Distance</strong>${r['Distance'] || 'N/A'}</div>
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <strong>Start Location</strong>
+                        ${hasLocationLink 
+                            ? `<a href="${r['Start Location Link']}" target="_blank" class="map-link">📍 ${r['Start Location']} ↗</a>` 
+                            : `📍 ${r['Start Location'] || 'N/A'}`}
+                    </div>
+                </div>
+                ${r['Description'] ? `<div class="description">${r['Description']}</div>` : ''}
+                <div class="links">
+                    ${hasClubLink ? `<a href="${r['Organizer/Club Link']}" target="_blank" class="btn">Club Info ↗</a>` : ''}
+                    ${hasStravaLink ? `<a href="${r['Strava Link']}" target="_blank" class="btn">Strava Route ↗</a>` : ''}
+                </div>
+            </div>
+            `;
+        }).join('') || '<p style="text-align:center;">No rides found.</p>';
+    }
+
+    function setupFilters(data) {
+        const daySelect = document.getElementById('dayFilter');
+        const catSelect = document.getElementById('catFilter');
+        
+        // Use a Set to get unique values, then sort them
+        const days = [...new Set(data.map(r => r['Day']))].filter(Boolean).sort();
+        const cats = [...new Set(data.map(r => r['Category/Speed']))].filter(Boolean).sort();
+        
+        // Reset filters to just the default option
+        daySelect.innerHTML = '<option value="">📅 All Days</option>';
+        catSelect.innerHTML = '<option value="">⚡ All Speeds</option>';
+        
+        days.forEach(d => daySelect.innerHTML += `<option value="${d}">${d}</option>`);
+        cats.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+        
+        daySelect.addEventListener('change', () => renderRides(data));
+        catSelect.addEventListener('change', () => renderRides(data));
+    }
+
+    init();
 </script>
 
 </body>
