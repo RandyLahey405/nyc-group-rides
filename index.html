@@ -3,54 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYC Group Rides</title>
+    <title>NYC Weekly Group Rides</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
+        :root { --primary: #2563eb; --bg: #ffffff; --card: #f8fafc; --text: #0f172a; --border: #e2e8f0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); line-height: 1.5; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { text-align: center; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
-        .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
+        .container { max-width: 700px; margin: 0 auto; }
         
-        .filters { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
-        select { padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: white; min-width: 160px; cursor: pointer; }
+        header { text-align: center; padding: 40px 0; border-bottom: 2px solid var(--border); margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; margin: 0; }
+        .subtitle { color: #64748b; font-size: 1.1rem; margin-top: 10px; }
 
-        .ride-list { display: grid; gap: 20px; }
-        .ride-card { background: var(--card); padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .ride-name { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin: 0; }
+        /* Day Sections */
+        .day-section { margin-bottom: 60px; }
+        .day-title { font-size: 1.8rem; font-weight: 800; border-bottom: 4px solid var(--primary); display: inline-block; margin-bottom: 25px; padding-right: 20px; }
         
-        .tags { display: flex; gap: 6px; }
-        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .tag-day { background: #dcfce7; color: #166534; }
+        .ride-list { display: grid; gap: 15px; }
+        .ride-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        
+        .ride-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+        .ride-name { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text); }
+        .ride-time { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
+
+        .ride-meta { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: #e2e8f0; color: #475569; }
         .tag-cat { background: #fee2e2; color: #991b1b; }
+
+        .location { font-size: 0.9rem; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .location a { color: var(--primary); text-decoration: none; font-weight: 600; }
         
-        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95rem; margin: 15px 0; }
-        .detail-item strong { color: #64748b; font-size: 0.8rem; text-transform: uppercase; display: block; }
-        
-        .description { font-size: 1rem; color: #334155; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; }
-        
-        .links { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
-        .btn { text-decoration: none; font-size: 0.9rem; font-weight: 600; color: var(--primary); display: flex; align-items: center; }
-        .map-link { color: #2563eb; text-decoration: none; font-weight: 500; }
+        .description { font-size: 0.95rem; color: #334155; margin-bottom: 15px; }
+
+        .links { display: flex; gap: 20px; font-size: 0.85rem; }
+        .links a { font-weight: 700; color: var(--primary); text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; }
+        .links a:hover { text-decoration: underline; }
+
+        .no-rides { color: #94a3b8; font-style: italic; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>NYC Group Rides</h1>
-    <p class="subtitle">The central dashboard for NYC's weekly pacelines</p>
+    <header>
+        <h1>NYC Group Rides</h1>
+        <p class="subtitle">Weekly pacelines and social rolls.</p>
+    </header>
 
-    <div class="filters">
-        <select id="dayFilter"><option value="">📅 All Days</option></select>
-        <select id="catFilter"><option value="">⚡ All Speeds</option></select>
+    <div id="schedule">
+        <p style="text-align: center;">Loading the peloton...</p>
     </div>
-
-    <div id="ride-list" class="ride-list">Loading the peloton...</div>
 </div>
 
 <script>
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eBkGA4ZZs82Yh5e4OtTPLaRUlmAAOSk5YeaCn_iwthbGJvHZ8GGK7Kt6C5LRoRvip-QPv_4B5v3S/pub?gid=0&single=true&output=csv';
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
     function init() {
         Papa.parse(sheetUrl, {
@@ -58,82 +64,68 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                const cleanedData = results.data.map(row => {
+                const data = results.data.map(row => {
                     const newRow = {};
-                    for (let key in row) { 
-                        newRow[key.trim()] = row[key] ? row[key].trim() : ""; 
-                    }
+                    for (let key in row) { newRow[key.trim()] = row[key] ? row[key].trim() : ""; }
                     return newRow;
                 });
-                const finalData = cleanedData.filter(row => row['Ride Name']);
-                setupFilters(finalData);
-                renderRides(finalData);
+                renderSchedule(data);
             }
         });
     }
 
-    function renderRides(rides) {
-        const list = document.getElementById('ride-list');
-        const dayVal = document.getElementById('dayFilter').value;
-        const catVal = document.getElementById('catFilter').value;
+    function renderSchedule(rides) {
+        const scheduleContainer = document.getElementById('schedule');
+        scheduleContainer.innerHTML = ''; // Clear loading message
 
-        const filtered = rides.filter(r => {
-            return (dayVal === '' || r['Day'] === dayVal) && 
-                   (catVal === '' || r['Category/Speed'] === catVal);
-        });
+        daysOfWeek.forEach(day => {
+            const ridesForDay = rides.filter(r => r['Day'] === day);
+            
+            // Create Section for the Day
+            const section = document.createElement('div');
+            section.className = 'day-section';
+            
+            let ridesHtml = ridesForDay.map(r => {
+                // Improved link checking: removes accidental spaces and checks for http
+                const clubLink = r['Organizer/Club Link'];
+                const stravaLink = r['Strava Link'];
+                const locLink = r['Start Location Link'];
 
-        list.innerHTML = filtered.map(r => {
-            const hasClubLink = r['Organizer/Club Link'] && r['Organizer/Club Link'].startsWith('http');
-            const hasStravaLink = r['Strava Link'] && r['Strava Link'].startsWith('http');
-            const hasLocationLink = r['Start Location Link'] && r['Start Location Link'].startsWith('http');
-
-            return `
-            <div class="ride-card">
-                <div class="ride-header">
-                    <h3 class="ride-name">${r['Ride Name']}</h3>
-                    <div class="tags">
-                        ${r['Day'] ? `<span class="tag tag-day">${r['Day']}</span>` : ''}
-                        ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
+                return `
+                    <div class="ride-card">
+                        <div class="ride-top">
+                            <h3 class="ride-name">${r['Ride Name']}</h3>
+                            <span class="ride-time">${r['Start Time']}</span>
+                        </div>
+                        <div class="ride-meta">
+                            ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
+                            ${r['Distance'] ? `<span class="tag">${r['Distance']}</span>` : ''}
+                        </div>
+                        <div class="location">
+                            📍 ${locLink ? `<a href="${locLink}" target="_blank">${r['Start Location']} ↗</a>` : r['Start Location']}
+                        </div>
+                        ${r['Description'] ? `<div class="description">${r['Description']}</div>` : ''}
+                        <div class="links">
+                            ${clubLink.includes('http') ? `<a href="${clubLink}" target="_blank">Club Info ↗</a>` : ''}
+                            ${stravaLink.includes('http') ? `<a href="${stravaLink}" target="_blank">Strava Route ↗</a>` : ''}
+                        </div>
                     </div>
+                `;
+            }).join('');
+
+            section.innerHTML = `
+                <h2 class="day-title">${day}</h2>
+                <div class="ride-list">
+                    ${ridesHtml || '<p class="no-rides">No rides listed for this day yet.</p>'}
                 </div>
-                <div class="details-grid">
-                    <div class="detail-item"><strong>Time</strong>${r['Start Time'] || 'N/A'}</div>
-                    <div class="detail-item"><strong>Distance</strong>${r['Distance'] || 'N/A'}</div>
-                    <div class="detail-item" style="grid-column: span 2;">
-                        <strong>Start Location</strong>
-                        ${hasLocationLink 
-                            ? `<a href="${r['Start Location Link']}" target="_blank" class="map-link">📍 ${r['Start Location']} ↗</a>` 
-                            : `📍 ${r['Start Location'] || 'N/A'}`}
-                    </div>
-                </div>
-                ${r['Description'] ? `<div class="description">${r['Description']}</div>` : ''}
-                <div class="links">
-                    ${hasClubLink ? `<a href="${r['Organizer/Club Link']}" target="_blank" class="btn">Club Info ↗</a>` : ''}
-                    ${hasStravaLink ? `<a href="${r['Strava Link']}" target="_blank" class="btn">Strava Route ↗</a>` : ''}
-                </div>
-            </div>
             `;
-        }).join('') || '<p style="text-align:center;">No rides found.</p>';
-    }
-
-    function setupFilters(data) {
-        const daySelect = document.getElementById('dayFilter');
-        const catSelect = document.getElementById('catFilter');
-        
-        const days = [...new Set(data.map(r => r['Day']))].filter(Boolean).sort();
-        const cats = [...new Set(data.map(r => r['Category/Speed']))].filter(Boolean).sort();
-        
-        daySelect.innerHTML = '<option value="">📅 All Days</option>';
-        catSelect.innerHTML = '<option value="">⚡ All Speeds</option>';
-        
-        days.forEach(d => daySelect.innerHTML += `<option value="${d}">${d}</option>`);
-        cats.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
-        
-        daySelect.addEventListener('change', () => renderRides(data));
-        catSelect.addEventListener('change', () => renderRides(data));
+            
+            scheduleContainer.appendChild(section);
+        });
     }
 
     init();
 </script>
+
 </body>
 </html>
