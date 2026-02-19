@@ -7,16 +7,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); line-height: 1.5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); line-height: 1.5; }
         .container { max-width: 800px; margin: 0 auto; }
         h1 { text-align: center; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
         .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
         
-        /* Filter Styling */
         .filters { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
         select { padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 16px; background: white; min-width: 160px; cursor: pointer; }
 
-        /* Card Styling */
         .ride-list { display: grid; gap: 20px; }
         .ride-card { background: var(--card); padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
@@ -34,9 +32,7 @@
         
         .links { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
         .btn { text-decoration: none; font-size: 0.9rem; font-weight: 600; color: var(--primary); display: flex; align-items: center; }
-        .btn:hover { text-decoration: underline; }
         .map-link { color: #2563eb; text-decoration: none; font-weight: 500; }
-        .map-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -46,29 +42,31 @@
     <p class="subtitle">The central dashboard for NYC's weekly pacelines</p>
 
     <div class="filters">
-        <select id="dayFilter"><option value="">📅 Filter by Day</option></select>
-        <select id="catFilter"><option value="">⚡ Filter by Speed</option></select>
+        <select id="dayFilter"><option value="">📅 All Days</option></select>
+        <select id="catFilter"><option value="">⚡ All Speeds</option></select>
     </div>
 
     <div id="ride-list" class="ride-list">Loading the peloton...</div>
 </div>
 
 <script>
-    // 1. PASTE YOUR CSV LINK BETWEEN THE QUOTES BELOW
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eBkGA4ZZs82Yh5e4OtTPLaRUlmAAOSk5YeaCn_iwthbGJvHZ8GGK7Kt6C5LRoRvip-QPv_4B5v3S/pub?gid=0&single=true&output=csv';
 
     function init() {
         Papa.parse(sheetUrl, {
             download: true,
             header: true,
+            skipEmptyLines: true,
             complete: function(results) {
-                // Filter out rows that don't have a Ride Name
-                const data = results.data.filter(row => row['Ride Name'] && row['Ride Name'].trim() !== "");
-                setupFilters(data);
-                renderRides(data);
-            },
-            error: function(err) {
-                document.getElementById('ride-list').innerHTML = "Error loading data. Check your Google Sheet link.";
+                // Remove spaces from headers automatically
+                const cleanedData = results.data.map(row => {
+                    const newRow = {};
+                    for (let key in row) { newRow[key.trim()] = row[key]; }
+                    return newRow;
+                });
+                const finalData = cleanedData.filter(row => row['Ride Name']);
+                setupFilters(finalData);
+                renderRides(finalData);
             }
         });
     }
@@ -88,10 +86,42 @@
                 <div class="ride-header">
                     <h3 class="ride-name">${r['Ride Name']}</h3>
                     <div class="tags">
-                        <span class="tag tag-day">${r['Day']}</span>
-                        <span class="tag tag-cat">${r['Category/Speed']}</span>
+                        <span class="tag tag-day">${r['Day'] || ''}</span>
+                        <span class="tag tag-cat">${r['Category/Speed'] || ''}</span>
                     </div>
                 </div>
-                
                 <div class="details-grid">
-                    <div class="detail-item"><strong>Time</strong>${r['Start Time']}</div>
+                    <div class="detail-item"><strong>Time</strong>${r['Start Time'] || 'N/A'}</div>
+                    <div class="detail-item"><strong>Distance</strong>${r['Distance'] || 'N/A'}</div>
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <strong>Start Location</strong>
+                        ${r['Start Location Link'] 
+                            ? `<a href="${r['Start Location Link']}" target="_blank" class="map-link">📍 ${r['Start Location']} ↗</a>` 
+                            : `📍 ${r['Start Location']}`}
+                    </div>
+                </div>
+                <div class="description">${r['Description'] || ''}</div>
+                <div class="links">
+                    ${r['Organizer/Club Link'] ? `<a href="${r['Organizer/Club Link']}" target="_blank" class="btn">Club Info ↗</a>` : ''}
+                    ${r['Strava Link'] ? `<a href="${r['Strava Link']}" target="_blank" class="btn">Strava Route ↗</a>` : ''}
+                </div>
+            </div>
+        `).join('') || '<p style="text-align:center;">No rides found.</p>';
+    }
+
+    function setupFilters(data) {
+        const daySelect = document.getElementById('dayFilter');
+        const catSelect = document.getElementById('catFilter');
+        const days = [...new Set(data.map(r => r['Day']))].filter(Boolean).sort();
+        const cats = [...new Set(data.map(r => r['Category/Speed']))].filter(Boolean).sort();
+        days.forEach(d => daySelect.innerHTML += `<option value="${d}">${d}</option>`);
+        cats.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+        daySelect.addEventListener('change', () => renderRides(data));
+        catSelect.addEventListener('change', () => renderRides(data));
+    }
+
+    init();
+</script>
+
+</body>
+</html>
