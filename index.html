@@ -70,4 +70,125 @@
             <a href="#Thursday" class="nav-btn">Thu</a>
             <a href="#Friday" class="nav-btn">Fri</a>
             <a href="#Saturday" class="nav-btn">Sat</a>
-            <a href="#Sunday" class
+            <a href="#Sunday" class="nav-btn">Sun</a>
+        </div>
+        <div class="filter-bar">
+            <select id="catFilter"><option value="">⚡ All Speeds / Categories</option></select>
+        </div>
+        <div class="ride-guide">
+            <span style="color: #64748b; font-weight: 700;">GUIDE:</span>
+            <span><strong style="color: #991b1b;">A:</strong> 22+ mph</span>
+            <span><strong style="color: #1e40af;">B:</strong> 18-20 mph</span>
+            <span><strong style="color: #166534;">C:</strong> 14-18 mph</span>
+        </div>
+    </div>
+
+    <div id="schedule">
+        <p style="text-align: center;">Loading the peloton...</p>
+    </div>
+
+    <div class="submit-section">
+        <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
+            Have a weekly ride we're missing? <br>
+            Send details to <span style="color: var(--primary); font-weight: 600;">team@nycpaceline.com</span>
+        </p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfV3LiiOeAqJjFqTxZ_dkdA6OYlA7hR6CXpgnl_rpzTNhj-SQ/viewform?usp=dialog" target="_blank" class="submit-btn">+ Submit a Ride</a>
+    </div>
+
+    <footer style="text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
+        <p>© 2026 NYC Paceline • <a href="mailto:team@nycpaceline.com" style="color: #94a3b8; text-decoration: underline;">team@nycpaceline.com</a></p>
+    </footer>
+</div>
+
+<script>
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eBkGA4ZZs82Yh5e4OtTPLaRUlmAAOSk5YeaCn_iwthbGJvHZ8GGK7Kt6C5LRoRvip-QPv_4B5v3S/pub?gid=0&single=true&output=csv';
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    let allRides = [];
+
+    function init() {
+        const d = new Date();
+        document.getElementById('last-updated').innerHTML = "Last updated: " + d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        Papa.parse(sheetUrl, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                allRides = results.data.map(row => {
+                    const newRow = {};
+                    for (let key in row) { newRow[key.trim()] = row[key] ? row[key].trim() : ""; }
+                    return newRow;
+                }).filter(r => r['Ride Name']);
+                populateCategoryFilter(allRides);
+                renderSchedule();
+                document.getElementById('searchInput').addEventListener('input', renderSchedule);
+                document.getElementById('catFilter').addEventListener('change', renderSchedule);
+            }
+        });
+    }
+
+    function populateCategoryFilter(rides) {
+        const catSelect = document.getElementById('catFilter');
+        const categories = [...new Set(rides.map(r => r['Category/Speed']))].filter(Boolean).sort();
+        categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            catSelect.appendChild(opt);
+        });
+    }
+
+    function renderSchedule() {
+        const scheduleContainer = document.getElementById('schedule');
+        const selectedCat = document.getElementById('catFilter').value;
+        const searchTerms = document.getElementById('searchInput').value.toLowerCase();
+        scheduleContainer.innerHTML = ''; 
+
+        const sectionHeaders = [...daysOfWeek, "Varies"];
+
+        sectionHeaders.forEach(header => {
+            const rides = allRides.filter(r => {
+                const matchesDay = (header === "Varies") ? (!daysOfWeek.includes(r['Day'])) : (r['Day'] === header);
+                const matchesCat = (selectedCat === '' || r['Category/Speed'] === selectedCat);
+                const matchesSearch = (r['Ride Name'].toLowerCase().includes(searchTerms) || r['Start Location'].toLowerCase().includes(searchTerms) || r['Description'].toLowerCase().includes(searchTerms));
+                return matchesDay && matchesCat && matchesSearch;
+            });
+
+            if (rides.length === 0) return;
+
+            const section = document.createElement('div');
+            section.className = 'day-section';
+            section.id = header;
+            
+            let ridesHtml = rides.map(r => `
+                <div class="ride-card">
+                    <div class="ride-top">
+                        <h3 class="ride-name">${r['Ride Name']}</h3>
+                        <span class="ride-time">${r['Start Time']}</span>
+                    </div>
+                    <div class="ride-meta">
+                        ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
+                        ${r['Distance'] ? `<span class="tag">${r['Distance']}</span>` : ''}
+                        ${r['Season'] ? `<span class="tag tag-season">🗓 ${r['Season']}</span>` : ''}
+                    </div>
+                    <div class="location">
+                        📍 ${r['Start Location Link'] ? `<a href="${r['Start Location Link']}" target="_blank">${r['Start Location']} ↗</a>` : r['Start Location']}
+                    </div>
+                    ${r['Description'] ? `<div class="description-text">${r['Description']}</div>` : ''}
+                    <div class="links">
+                        ${r['Organizer/Club Link'] && r['Organizer/Club Link'].includes('http') ? `<a href="${r['Organizer/Club Link']}" target="_blank">Info ↗</a>` : ''}
+                        ${r['Strava Link'] && r['Strava Link'].includes('http') ? `<a href="${r['Strava Link']}" target="_blank">Route ↗</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            const displayTitle = (header === "Varies") ? "Special / Varying Schedule" : header;
+            section.innerHTML = `<h2 class="day-title">${displayTitle}</h2><div class="ride-list">${ridesHtml}</div>`;
+            scheduleContainer.appendChild(section);
+        });
+        if (scheduleContainer.innerHTML === '') scheduleContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; padding: 40px;">No rides found.</p>';
+    }
+    init();
+</script>
+</body>
+</html>
