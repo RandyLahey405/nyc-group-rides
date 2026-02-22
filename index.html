@@ -53,7 +53,7 @@
         <p id="last-updated"></p>
     </header>
 
-    <div class="controls">
+   <div class="controls">
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search by ride name, club, or location...">
         </div>
@@ -71,25 +71,20 @@
                 <option value="">⚡ All Speeds / Categories</option>
             </select>
         </div>
+        
+        <div style="margin-top: 20px; padding: 10px; background: #f1f5f9; border-radius: 8px; display: flex; justify-content: center; gap: 15px; font-size: 0.8rem; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+            <span style="color: #64748b; font-weight: 700; text-transform: uppercase;">Guide:</span>
+            <span><strong style="color: #991b1b;">A:</strong> 22+ mph</span>
+            <span><strong style="color: #1e40af;">B:</strong> 18-20 mph</span>
+            <span><strong style="color: #166534;">C:</strong> 14-18 mph</span>
+            <span style="color: #64748b; font-style: italic;">(Speeds vary by terrain)</span>
+        </div>
     </div>
 
     <div id="schedule">
         <p style="text-align: center;">Loading the peloton...</p>
     </div>
-
-    <div style="text-align: center; margin: 80px 0; padding: 0 20px;">
-        <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-            Have a weekly ride we're missing? <br>
-            Send details to <span style="color: var(--primary); font-weight: 600;">team@nycpaceline.com</span> or use the link below:
-        </p>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfV3LiiOeAqJjFqTxZ_dkdA6OYlA7hR6CXpgnl_rpzTNhj-SQ/viewform?usp=dialog" target="_blank" class="submit-btn">+ Submit a Ride</a>
-    </div>
-
-    <footer style="text-align: center; padding: 40px; color: #94a3b8; font-size: 0.9rem; border-top: 1px solid #e2e8f0;">
-        <p>© 2026 NYC Paceline • <a href="mailto:team@nycpaceline.com" style="color: #94a3b8; text-decoration: underline;">team@nycpaceline.com</a></p>
-    </footer>
-</div>
-
+    
 <script>
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eBkGA4ZZs82Yh5e4OtTPLaRUlmAAOSk5YeaCn_iwthbGJvHZ8GGK7Kt6C5LRoRvip-QPv_4B5v3S/pub?gid=0&single=true&output=csv';
     const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
