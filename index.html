@@ -15,39 +15,48 @@
         .description { font-size: 1.15rem; color: #475569; max-width: 550px; margin: 0 auto 12px auto; line-height: 1.4; font-weight: 500; }
         #last-updated { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; }
         
+        /* Navigation & Search */
         .controls { position: sticky; top: 0; background: white; padding: 15px 0; border-bottom: 1px solid var(--border); z-index: 100; margin-bottom: 30px; }
         .search-container { margin-bottom: 15px; width: 100%; }
-        #searchInput { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 1rem; box-sizing: border-box; outline: none; }
+        #searchInput { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 1rem; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        #searchInput:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
         .day-nav { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
         .nav-btn { text-decoration: none; font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; text-transform: uppercase; }
-        .nav-btn:hover { background: var(--primary); color: white; }
+        .nav-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .filter-bar { display: flex; justify-content: center; gap: 10px; }
-        select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; background: var(--card); font-weight: 600; cursor: pointer; }
+        /* Filter Row */
+        .filter-bar { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; background: var(--card); font-weight: 600; cursor: pointer; min-width: 140px; }
 
         .ride-guide { margin-top: 20px; padding: 10px; background: #f1f5f9; border-radius: 8px; display: flex; justify-content: center; gap: 15px; font-size: 0.8rem; border: 1px solid #e2e8f0; flex-wrap: wrap; }
 
+        /* Ride Cards */
         .day-section { margin-bottom: 50px; scroll-margin-top: 220px; }
         .day-title { font-size: 1.8rem; font-weight: 800; border-bottom: 4px solid var(--primary); display: inline-block; margin-bottom: 25px; padding-right: 20px; }
+        .ride-list { display: grid; gap: 15px; }
+        .ride-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); transition: transform 0.2s; }
         
-        .ride-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         .ride-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-        .ride-name { font-size: 1.25rem; font-weight: 700; margin: 0; }
+        .ride-name { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text); }
         .ride-time { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
-        
-        .tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: #e2e8f0; color: #475569; margin-right: 5px; }
+
+        /* Tags */
+        .ride-meta { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .tag { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: #e2e8f0; color: #475569; }
         .tag-cat { background: #fee2e2; color: #991b1b; }
         .tag-season { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .tag-loc { background: #e0f2fe; color: #0369a1; }
 
-        .location { font-size: 0.9rem; margin: 10px 0; }
+        .location { font-size: 0.9rem; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
         .location a { color: var(--primary); text-decoration: none; font-weight: 600; }
         .description-text { font-size: 0.95rem; color: #334155; margin-bottom: 15px; }
-        
-        .links a { font-weight: 700; color: var(--primary); text-decoration: none; text-transform: uppercase; font-size: 0.85rem; margin-right: 15px; }
+
+        .links { display: flex; gap: 20px; font-size: 0.85rem; }
+        .links a { font-weight: 700; color: var(--primary); text-decoration: none; text-transform: uppercase; }
         
         .submit-section { text-align: center; margin: 80px 0; padding: 0 20px; }
-        .submit-btn { background: #2563eb; color: white !important; padding: 14px 28px; border-radius: 50px; text-decoration: none !important; font-weight: 700; display: inline-block; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
+        .submit-btn { background: #2563eb; color: white !important; padding: 14px 28px; border-radius: 50px; text-decoration: none !important; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); display: inline-block; transition: 0.2s; }
     </style>
 </head>
 <body>
@@ -61,7 +70,7 @@
 
     <div class="controls">
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search rides, clubs, or locations...">
+            <input type="text" id="searchInput" placeholder="Search rides, clubs, or routes...">
         </div>
         <div class="day-nav">
             <a href="#Monday" class="nav-btn">Mon</a>
@@ -73,7 +82,8 @@
             <a href="#Sunday" class="nav-btn">Sun</a>
         </div>
         <div class="filter-bar">
-            <select id="catFilter"><option value="">⚡ All Speeds / Categories</option></select>
+            <select id="locFilter"><option value="">🌎 All Regions</option></select>
+            <select id="catFilter"><option value="">⚡ All Speeds</option></select>
         </div>
         <div class="ride-guide">
             <span style="color: #64748b; font-weight: 700;">GUIDE:</span>
@@ -119,39 +129,55 @@
                     for (let key in row) { newRow[key.trim()] = row[key] ? row[key].trim() : ""; }
                     return newRow;
                 }).filter(r => r['Ride Name']);
-                populateCategoryFilter(allRides);
+                
+                populateFilters(allRides);
                 renderSchedule();
+                
                 document.getElementById('searchInput').addEventListener('input', renderSchedule);
                 document.getElementById('catFilter').addEventListener('change', renderSchedule);
+                document.getElementById('locFilter').addEventListener('change', renderSchedule);
             }
         });
     }
 
-    function populateCategoryFilter(rides) {
+    function populateFilters(rides) {
         const catSelect = document.getElementById('catFilter');
+        const locSelect = document.getElementById('locFilter');
+        
         const categories = [...new Set(rides.map(r => r['Category/Speed']))].filter(Boolean).sort();
+        const locations = [...new Set(rides.map(r => r['Location']))].filter(Boolean).sort();
+
         categories.forEach(cat => {
             const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            catSelect.appendChild(opt);
+            opt.value = cat; opt.textContent = cat; catSelect.appendChild(opt);
+        });
+
+        locations.forEach(loc => {
+            const opt = document.createElement('option');
+            opt.value = loc; opt.textContent = loc; locSelect.appendChild(opt);
         });
     }
 
     function renderSchedule() {
-        const scheduleContainer = document.getElementById('schedule');
+        const container = document.getElementById('schedule');
         const selectedCat = document.getElementById('catFilter').value;
+        const selectedLoc = document.getElementById('locFilter').value;
         const searchTerms = document.getElementById('searchInput').value.toLowerCase();
-        scheduleContainer.innerHTML = ''; 
-
+        
+        container.innerHTML = ''; 
         const sectionHeaders = [...daysOfWeek, "Varies"];
 
         sectionHeaders.forEach(header => {
             const rides = allRides.filter(r => {
                 const matchesDay = (header === "Varies") ? (!daysOfWeek.includes(r['Day'])) : (r['Day'] === header);
                 const matchesCat = (selectedCat === '' || r['Category/Speed'] === selectedCat);
-                const matchesSearch = (r['Ride Name'].toLowerCase().includes(searchTerms) || r['Start Location'].toLowerCase().includes(searchTerms) || r['Description'].toLowerCase().includes(searchTerms));
-                return matchesDay && matchesCat && matchesSearch;
+                const matchesLoc = (selectedLoc === '' || r['Location'] === selectedLoc);
+                const matchesSearch = (
+                    r['Ride Name'].toLowerCase().includes(searchTerms) ||
+                    r['Start Location'].toLowerCase().includes(searchTerms) ||
+                    r['Description'].toLowerCase().includes(searchTerms)
+                );
+                return matchesDay && matchesCat && matchesLoc && matchesSearch;
             });
 
             if (rides.length === 0) return;
@@ -167,6 +193,7 @@
                         <span class="ride-time">${r['Start Time']}</span>
                     </div>
                     <div class="ride-meta">
+                        ${r['Location'] ? `<span class="tag tag-loc">${r['Location']}</span>` : ''}
                         ${r['Category/Speed'] ? `<span class="tag tag-cat">${r['Category/Speed']}</span>` : ''}
                         ${r['Distance'] ? `<span class="tag">${r['Distance']}</span>` : ''}
                         ${r['Season'] ? `<span class="tag tag-season">🗓 ${r['Season']}</span>` : ''}
@@ -184,10 +211,14 @@
 
             const displayTitle = (header === "Varies") ? "Special / Varying Schedule" : header;
             section.innerHTML = `<h2 class="day-title">${displayTitle}</h2><div class="ride-list">${ridesHtml}</div>`;
-            scheduleContainer.appendChild(section);
+            container.appendChild(section);
         });
-        if (scheduleContainer.innerHTML === '') scheduleContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; padding: 40px;">No rides found.</p>';
+        
+        if (container.innerHTML === '') {
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding: 40px;">No rides found matching your filters.</p>';
+        }
     }
+
     init();
 </script>
 </body>
